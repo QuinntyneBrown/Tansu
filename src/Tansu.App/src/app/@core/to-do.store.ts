@@ -19,11 +19,6 @@ export class ToDoStore extends Store<ToDoStoreState> {
         });
     }
 
-    // $: Observable<ToDoStoreState> = of(undefined)
-    // .pipe(
-    //     switchMap(_ => this as unknown as Observable<ToDoStoreState>)
-    // );
-
     private _reset() { this.set({ }); }
 
     get(): Observable<ToDo[]> {

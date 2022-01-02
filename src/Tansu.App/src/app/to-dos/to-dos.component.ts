@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToDo, ToDoService } from '@api';
-import { combine, get } from '@core';
+import { ToDo } from '@api';
+import { combine } from '@core';
 import { ToDoStore } from '@core/to-do.store';
-import { BehaviorSubject, from, Observable, ObservableInput, of, Subject } from 'rxjs';
+import { from, Observable, ObservableInput, of, Subject } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
 
@@ -19,29 +19,30 @@ export class ToDosComponent {
   private readonly _selectSubject: Subject<ToDo> = new Subject();
   private readonly _createSubject: Subject<void> = new Subject();
   private readonly _deleteSubject: Subject<ToDo> = new Subject();
-  private readonly _refreshSubject: BehaviorSubject<null> = new BehaviorSubject(null);
-
-  readonly vm$ = this._refreshSubject
+  private _selected$: Observable<ToDo> = this._activatedRoute
+  .paramMap
   .pipe(
-    switchMap(_ => combine([
-      this._toDoStore.get(),
-      this._selected$,
-      this._toDoStore as unknown as ObservableInput<any>,
-      this._createSubject.pipe(switchMap(_ => this._handleCreate())),
-      this._saveSubject.pipe(switchMap(toDo => this._handleSave(toDo))),
-      this._selectSubject.pipe(switchMap(toDo => this._handleSelect(toDo))),
-      this._deleteSubject.pipe(switchMap(toDo => this._handleDelete(toDo)))
-    ])),
-    map(([toDos, selected, x]) => ({ toDos, selected, x }))
+    map(x => x.get("toDoId")),
+    switchMap((toDoId: string) => toDoId ? this._toDoStore.getById({ toDoId }) : of({} as ToDo)));
+
+  readonly vm$ = combine([
+    this._toDoStore.get(),
+    this._selected$,
+    this._toDoStore as unknown as ObservableInput<any>,
+    this._createSubject.pipe(switchMap(_ => this._handleCreate())),
+    this._saveSubject.pipe(switchMap(toDo => this._handleSave(toDo))),
+    this._selectSubject.pipe(switchMap(toDo => this._handleSelect(toDo))),
+    this._deleteSubject.pipe(switchMap(toDo => this._handleDelete(toDo)))
+  ])
+  .pipe(
+    map(([toDos, selected]) => ({ toDos, selected }))
   );
 
   constructor(
     private readonly _activatedRoute: ActivatedRoute,
     private readonly _toDoStore: ToDoStore,
     private readonly _router: Router,  
-  ) { 
-
-  }
+  ) { }
 
   private _handleSelect(toDo: ToDo): Observable<boolean> {
     return from(this._router.navigate(["/","to-dos","edit", toDo.toDoId]));
@@ -54,24 +55,16 @@ export class ToDosComponent {
   private _handleSave(toDo: ToDo): Observable<boolean> {
     return (toDo.toDoId ? this._toDoStore.updateToDo({ toDo }) : this._toDoStore.createToDo({ toDo }))
     .pipe(      
-      switchMap(_ => this._router.navigate(["/","to-dos"])),
-      tap(_ => this._refreshSubject.next(null))
+      switchMap(_ => this._router.navigate(["/","to-dos"]))
       );    
   }
 
   private _handleDelete(toDo: ToDo): Observable<boolean> {
     return this._toDoStore.removeToDo({ toDo })
     .pipe(
-      switchMap(_ => this._router.navigate(["/","to-dos"])),
-      tap(_ => this._refreshSubject.next(null))
+      switchMap(_ => this._router.navigate(["/","to-dos"]))
     );
   }
-
-  private _selected$: Observable<ToDo> = this._activatedRoute
-  .paramMap
-  .pipe(
-    map(x => x.get("toDoId")),
-    switchMap((toDoId: string) => toDoId ? this._toDoStore.getById({ toDoId }) : of({} as ToDo)));
 
   onSave(toDo: ToDo) {
     this._saveSubject.next(toDo);
