@@ -1,0 +1,16 @@
+{
+  "domainNamespace": "Tansu.Api",
+  "applicationNamespace": "Tansu.Api",
+  "infrastructureNamespace": "Tansu.Api",
+  "apiNamespace": "Tansu.Api",
+  "domainDirectory": "c:\\projects\\Tansu\\src\\Tansu.Api",
+  "applicationDirectory": "c:\\projects\\Tansu\\src\\Tansu.Api",
+  "infrastructureDirectory": "c:\\projects\\Tansu\\src\\Tansu.Api",
+  "apiDirectory": "c:\\projects\\Tansu\\src\\Tansu.Api",
+  "path": "c:\\projects\\Tansu",
+  "dbContext": "TansuDbContext",
+  "sourceFolder": "src",
+  "resources": [
+    "ToDo"
+  ]
+}

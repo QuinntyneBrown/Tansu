@@ -1,0 +1,4 @@
+<div tListDetail *ngIf="vm$ | async as vm">
+  <t-to-do-list [toDos]="vm.toDos" [selected]="vm.selected" (delete)="onDelete($event)" (select)="onSelect($event)" (create)="onCreate()"></t-to-do-list>
+  <t-to-do-detail [toDo]="vm.selected" (save)="onSave($event)"></t-to-do-detail>
+</div>
